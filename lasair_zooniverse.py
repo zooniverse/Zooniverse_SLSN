@@ -125,13 +125,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
                 data = json.load(f)
                 f.close()
                 lasair_zobject = self.create_lasair_object(data)
-                light_curve, panstamps = self.build_plots(lasair_zobject, data_dir)
-                metadata = {'objectId': lasair_zobject.objectId, 'ramean': lasair_zobject.ramean, 'decmean': lasair_zobject.decmean }
-
-                proto_subject = {}
-                proto_subject['location_lc'] = light_curve
-                proto_subject['location_ps'] = panstamps
-                proto_subject['metadata'] = metadata
+                proto_subject = self.build_proto_subject(lasair_zobject, data_dir)
                 if (proto_subject != None):
                   proto_subjects.append(proto_subject)
             return proto_subjects
@@ -142,18 +136,22 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         # produce plots and gather metadata for each subject to be created
         lasair_zobject = self.parse_object_data(unique_id, data_dir)
         if(lasair_zobject != None):
-            try:
-                light_curve, panstamps = self.build_plots(lasair_zobject, data_dir)
-                metadata = {'objectId': lasair_zobject.objectId, 'ramean': lasair_zobject.ramean, 'decmean': lasair_zobject.decmean }
+            return self.build_proto_subject(lasair_zobject, data_dir)
+        return None
 
-                proto_subject = {}
-                proto_subject['location_lc'] = light_curve
-                proto_subject['location_ps'] = panstamps
-                proto_subject['metadata'] = metadata
+    def build_proto_subject(self, lasair_zobject, data_dir):
+        try:
+            light_curve, panstamps = self.build_plots(lasair_zobject, data_dir)
+            metadata = {'objectId': lasair_zobject.objectId, 'ramean': lasair_zobject.ramean, 'decmean': lasair_zobject.decmean }
 
-                return (proto_subject)
-            except Exception:
-                self.log.exception("Error in produce_proto_subject for object: " + unique_id)
+            proto_subject = {}
+            proto_subject['location_lc'] = light_curve
+            proto_subject['location_ps'] = panstamps
+            proto_subject['metadata'] = metadata
+
+            return (proto_subject)
+        except Exception:
+            self.log.exception("Error in build_proto_subject for object: " + lasair_zobject.objectId)
         return None
 
     def create_subjects_and_link_to_project(self, proto_subjects, project_id, workflow_id, subject_set_id):
