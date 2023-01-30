@@ -293,7 +293,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
-        font = {'family' : 'normal',
+        font = {'family' : 'sans-serif',
                 'size'   : 22}
 
         matplotlib.rc('font', **font)
