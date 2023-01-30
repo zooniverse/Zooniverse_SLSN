@@ -301,7 +301,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
                    color='#4489C5')
 
         ax.set_xlabel('Days since First Detection')
-        ax.set_ylabel('Difference Magnitude')
+        ax.set_ylabel('Brightness')
 
         plt.grid()
         plt.gca().invert_yaxis()
