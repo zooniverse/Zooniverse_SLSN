@@ -6,6 +6,8 @@ import lasair_consumer
 import logging
 import matplotlib
 
+from pathlib import Path
+
 from lasair_consumer import msgConsumer
 from PIL import Image, ImageDraw
 from lasair_zooniverse_base import lasair_zooniverse_base_class
@@ -99,7 +101,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
     def get_objectdata_via_api(self, objectId, data_dir, L):
         # Initially let's do this as before and write the JSON to disk.
         try:
-            dirpath = os.path.join(data_dir, time.strftime("%m-%d-%Y", time.gmtime()))
+            dirpath = os.path.join(data_dir, 'pending')
             if not os.path.exists(dirpath):
                 os.makedirs(dirpath)
             print(dirpath)
@@ -110,7 +112,31 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         except Exception as e:
             self.log.exception("Error in API get for object: " + objectId)
 
+    def get_proto_subjects(self, data_dir):
+        proto_subjects = []
+        try:
+            dirpath = os.path.join(data_dir, 'pending')
+            if not os.path.exists(dirpath):
+                return proto_subjects
+            files = Path(dirpath).glob('*.json')
+            for file in files:
+                print(file.name)
+                f=open(file, "r")
+                data = json.load(f)
+                f.close()
+                lasair_zobject = self.create_lasair_object(data)
+                light_curve, panstamps = self.build_plots(lasair_zobject, data_dir)
+                metadata = {'objectId': lasair_zobject.objectId, 'ramean': lasair_zobject.ramean, 'decmean': lasair_zobject.decmean }
 
+                proto_subject = {}
+                proto_subject['location_lc'] = light_curve
+                proto_subject['location_ps'] = panstamps
+                proto_subject['metadata'] = metadata
+                if (proto_subject != None):
+                  proto_subjects.append(proto_subject)
+            return proto_subjects
+        except Exception as e:
+            self.log.exception("Error reading JSON object files from " + data_dir)
 
     def produce_proto_subject(self, unique_id, data_dir):
         # produce plots and gather metadata for each subject to be created
@@ -134,8 +160,8 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
 
         
         try:
-            USERNAME = os.getenv('PANOPTES_USERNAME') 
-            PASSWORD = os.getenv('PANOPTES_PASSWORD')  
+            USERNAME = os.getenv('PANOPTES_USERNAME')
+            PASSWORD = os.getenv('PANOPTES_PASSWORD')
             Panoptes.connect(username=USERNAME, password=PASSWORD, endpoint=self.ENDPOINT)
             
             project = Project.find(project_id)
@@ -168,40 +194,43 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
 
     def parse_object_data(self, objectId, data_dir):
         try:
-            dirpath = os.path.join(data_dir, time.strftime("%m-%d-%Y", time.gmtime()))
+            dirpath = os.path.join(data_dir, 'pending')
             f=open(os.path.join(dirpath, objectId + '.json'), "r")
             data = json.load(f)
             f.close()
-
-            lo = lasair_object(objectId, 0,0,0,0)
-            for key, value in data.items():
-                if key == 'objectData':
-                    objectData = value
-                    for objData in objectData:
-                        for dkey, dvalue in objectData.items():
-                            if dkey == 'ramean':
-                                lo.ramean = dvalue
-                            elif dkey == 'decmean':
-                                lo.decmean = dvalue
-                elif key == 'candidates':
-                    candidates = value
-                    print(len(candidates))
-                    for candidate in candidates:
-                        mjd = candidate['mjd']
-                        fid = candidate['fid']
-                        mag = candidate['magpsf']
-                        try:
-                          error = candidate['sigmapsf']
-                          flag = True
-                        except KeyError:
-                          mag = candidate['diffmaglim']
-                          flag = False
-                        lo.Detections.append({'mjd':mjd, 'mag':mag, 'fid':fid, 'error':error, 'detect_flag': flag})
+            lo = create_lasair_object(data)
             return lo
         except Exception as e:
             print(repr(e))
             return None
-    
+
+    def create_lasair_object(self, data):
+        lo = lasair_object(data['objectId'], 0,0,0,0)
+        for key, value in data.items():
+            if key == 'objectData':
+                objectData = value
+                for objData in objectData:
+                    for dkey, dvalue in objectData.items():
+                        if dkey == 'ramean':
+                            lo.ramean = dvalue
+                        elif dkey == 'decmean':
+                            lo.decmean = dvalue
+            elif key == 'candidates':
+                candidates = value
+                print(len(candidates))
+                for candidate in candidates:
+                    mjd = candidate['mjd']
+                    fid = candidate['fid']
+                    mag = candidate['magpsf']
+                    try:
+                      error = candidate['sigmapsf']
+                      flag = True
+                    except KeyError:
+                      mag = candidate['diffmaglim']
+                      flag = False
+                    lo.Detections.append({'mjd':mjd, 'mag':mag, 'fid':fid, 'error':error, 'detect_flag': flag})
+        return lo
+
     def gather_metadata(self, ramean, decmean, dirpath):
         #logger = logging.getLogger("Panstamps")
         fitsPaths, jpegPaths, colorPath = downloader(
@@ -263,6 +292,8 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
               mag_blue_limit.append(detection['mag'])
 
         dirpath = os.path.join(data_dir, time.strftime("%m-%d-%Y", time.gmtime()))
+        if not os.path.exists(dirpath):
+            os.makedirs(dirpath)
 
         font = {'family' : 'normal',
                 'size'   : 22}

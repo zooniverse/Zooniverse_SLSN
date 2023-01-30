@@ -65,8 +65,8 @@ def main():
     max_limit = config.getint('APP','RECORDS_LIMIT')
     objectIds = objectIds[:max_limit]
 
-  # Create an empty list to track the proto-subjects.
-  proto_subjects = []
+  # Get any pending subjects from previous runs
+  proto_subjects = lasair_zoo.get_proto_subjects(config.get('APP','DATA_DIR'))
 
   # Iterate through the objects queried from lasair
   for object_id in objectIds:
