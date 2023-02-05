@@ -196,7 +196,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
             f=open(os.path.join(dirpath, objectId + '.json'), "r")
             data = json.load(f)
             f.close()
-            lo = create_lasair_object(data)
+            lo = self.create_lasair_object(data)
             return lo
         except Exception as e:
             print(repr(e))
