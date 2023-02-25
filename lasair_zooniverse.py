@@ -282,28 +282,32 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
           'seriesData': [],
           'seriesOptions': {
             'color': '#D1495B',
-            'glyph': 'circle'
+            'glyph': 'circle',
+            'label': 'Red detection'
           }
         }
         blue_detections = {
           'seriesData': [],
           'seriesOptions': {
             'color': '#26547C',
-            'glyph': 'diamond'
+            'glyph': 'diamond',
+            'label': 'Blue detection'
           }
         }
         red_limits = {
           'seriesData': [],
           'seriesOptions': {
             'color': '#DE7C89',
-            'glyph': 'triangle'
+            'glyph': 'triangle',
+            'label': 'Red no detection'
           }
         }
         blue_limits = {
           'seriesData': [],
           'seriesOptions': {
             'color': '#4489C5',
-            'glyph': 'triangle'
+            'glyph': 'triangle',
+            'label': 'Blue no detection'
           }
         }
 
