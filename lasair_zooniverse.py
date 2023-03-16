@@ -183,7 +183,6 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         
         try:
             with panoptes_client:
-            
                 project = Project.find(project_id)
                 workflow = Workflow().find(workflow_id)
 
@@ -192,6 +191,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
                     ts = time.gmtime()
                     subject_set.display_name = time.strftime("%Y-%m-%d %H:%M:%S", ts) 
                     subject_set.links.project = project
+                
                     subject_set.save()
                 else:
                     subject_set = SubjectSet().find(subject_set_id)
@@ -199,10 +199,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
                 for proto_subject in proto_subjects:
                     subject = Subject()
                     subject.links.project = project
-                    subject.locations.append('application/json')
-                    json_data = open(proto_subject['location_lc'], 'rb')
-                    subject._media_files.append(json_data.read())
-                    json_data.close()
+                    subject.add_location(proto_subject['location_lc'])
                     subject.add_location(proto_subject['location_ps'])
                     subject.metadata.update(proto_subject['metadata'])
                     subject.save()
