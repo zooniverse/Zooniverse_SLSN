@@ -3,5 +3,5 @@ lasair>=0.0.5
 matplotlib>=3.6.2
 wget>=3.2
 panoptes-client>=1.5.0
-panstamps>=0.6.2
+panstamps>=0.6.5
 gkutils>=0.2.17
