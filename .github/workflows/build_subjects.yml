@@ -1,7 +1,10 @@
 name: build subjects
 
 on:
-  workflow_dispatch
+  schedule:
+    # 09:31 every Wednesday
+    - cron: '31 9 * * 3'
+  workflow_dispatch:
 
 jobs:
   build_date:
