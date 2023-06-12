@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  import:
+    build:
+      context: .
+    volumes:
+      - ./:/usr/src
+    entrypoint:
+      - "/bin/sh"
+    environment:
+      - PANOPTES_USERNAME=<PANOPTES_USERNAME>
+      - PANOPTES_PASSWORD=<PANOPTES_PASSWORD>
+      - LASAIR_TOKEN=<LASAIR_TOKEN>
