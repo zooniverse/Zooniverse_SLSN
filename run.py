@@ -45,7 +45,7 @@ def main():
   config = ConfigParser()
   config.read(options.configfile)
   log = logging.getLogger("main-logger")
-  L = lasair(config.get('APP','LASAIR_TOKEN'), endpoint = 'https://lasair-ztf.lsst.ac.uk/api', timeout = 2.0)
+  L = lasair(os.getenv('LASAIR_TOKEN'), endpoint = 'https://lasair-ztf.lsst.ac.uk/api', timeout = 2.0)
 
   # Instantiate lasair-Zooniverse interface class
   lasair_zoo = lasair_zooniverse_class(config.get('APP', 'KAFKA_SERVER'),
