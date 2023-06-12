@@ -173,7 +173,7 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
             if subject_set_id == None:
                 subject_set = SubjectSet()
                 ts = time.gmtime()
-                subject_set.display_name = 'DOCKER TEST' + time.strftime("%m-%d-%Y %H:%M:%S", ts) 
+                subject_set.display_name = time.strftime("%Y-%m-%d %H:%M:%S", ts) 
                 subject_set.links.project = project
                 
                 subject_set.save()

@@ -19,5 +19,5 @@ ARG BUILD_DATE=''
 ENV BUILD_DATE=$BUILD_DATE
 RUN echo building at $BUILD_DATE
 
-RUN python3 run.py --test
+RUN python3 run.py
 RUN rm -rf ./data/pending
