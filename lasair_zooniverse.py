@@ -142,7 +142,12 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
     def build_proto_subject(self, lasair_zobject, data_dir):
         try:
             light_curve, panstamps = self.build_plots(lasair_zobject, data_dir)
-            metadata = {'objectId': lasair_zobject.objectId, 'ramean': lasair_zobject.ramean, 'decmean': lasair_zobject.decmean }
+            metadata = {
+              'objectId': lasair_zobject.objectId,
+              'ramean': lasair_zobject.ramean,
+              'decmean': lasair_zobject.decmean,
+              'ZTF_URL': 'https://lasair-ztf.lsst.ac.uk/objects/' + lasair_zobject.objectId
+            }
 
             proto_subject = {}
             proto_subject['location_lc'] = light_curve
