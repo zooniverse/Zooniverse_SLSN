@@ -1,0 +1,9 @@
+name: build subjects
+
+on:
+  workflow_dispatch
+
+jobs:
+  build_subjects:
+    name: Build Zooniverse subjects from Lasair
+    runs-on: ubuntu-latest
