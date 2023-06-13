@@ -2,6 +2,26 @@
 
 This repository demonstrates integration of [lasair](https://lasair.roe.ac.uk/), a broker for astronomers studying transient and variable astrophysical sources and the [Zooniverse](https://www.zooniverse.org/) citizen science platform.  The code here was used to prepare daily data uploads based on new alerts from lasair for the [Superluminous Supernova citizen science project](https://www.zooniverse.org/projects/mrniaboc/superluminous-supernovae) hosted on Zooniverse.
 
+## Run with Docker
+
+You'll need to have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
+
+Copy `docker-compose.template.yml` to `docker-compose.yml` and add your Panoptes username, password and Lasair token.
+
+Build the Docker image.
+
+```sh
+docker compose build
+```
+
+This will install all the Python dependencies, then run the `run.py` script to build and upload Zooniverse subjects. Read the `Dockerfile` in this repo to see exactly what the build runs.
+
+## Run with GitHub Actions
+
+The ['build subjects'](https://github.com/zooniverse/Zooniverse_SLSN/actions/workflows/build_subjects.yml) action will run a Docker build, installing the Python dependencies and running `run.py`.
+
+You can run it manually from the [Actions tab](https://github.com/zooniverse/Zooniverse_SLSN/actions). It is also scheduled to run weekly on Wednesday mornings.
+
 ## Installation
 
 Clone this repo
@@ -26,7 +46,7 @@ To get help, try:
 $ python run.py --help
 ```
 
-Copy the config.ini.template to config.ini (not saved in github) and add your ```LASAIR_TOKEN```. The config.ini file contains important parameters for this example.  The example script queries the [lasair_6ZooniverseTestSN-likecandidatesinlast14days](https://lasair-ztf.lsst.ac.uk/query/581/) ```TOPIC``` from the lasair kafka stream at ```KAFKA_SERVER``` i.e. kafka.lsst.ac.uk:9092.  The kafka stream returns all alerts added to that stream since the stream was last queried by the ```GROUP_ID```, 'Test' in this case.  For this example the number of alerts returned is limited (```RECORDS_LIMIT```) to 20.  The script downloads lightcurve data for each alert using the ```LASAIR_TOKEN``` and saves these to ```DATA_DIR```.  From the downloaded lightcurve data, the script produces a lightcurve plot and grabs a PanSTARRS-1 (PS1) image at the location of each alert (see example below) which are also saved to ```DATA_DIR```.  ***Note: If the kafka stream does not return any alerts it may be because the *** ```GROUP_ID``` *** in the config.ini has already queried all the latest alerts from the stream.  In this case try changing*** ```GROUP_ID``` *** to something else and try running the script again *** OR execute the code with the ```--test``` option, which will add a random UUID to the end of the *** ```GROUP_ID``` ***.
+Add the `LASAIR_TOKEN` variable to your environment. The config.ini file contains important parameters for this example.  The example script queries the [lasair_6ZooniverseTestSN-likecandidatesinlast14days](https://lasair-ztf.lsst.ac.uk/query/581/) ```TOPIC``` from the lasair kafka stream at ```KAFKA_SERVER``` i.e. kafka.lsst.ac.uk:9092.  The kafka stream returns all alerts added to that stream since the stream was last queried by the ```GROUP_ID```, 'Test' in this case.  For this example the number of alerts returned is limited (```RECORDS_LIMIT```) to 20.  The script downloads lightcurve data for each alert using the ```LASAIR_TOKEN``` and saves these to ```DATA_DIR```.  From the downloaded lightcurve data, the script produces a lightcurve plot and grabs a PanSTARRS-1 (PS1) image at the location of each alert (see example below) which are also saved to ```DATA_DIR```.  ***Note: If the kafka stream does not return any alerts it may be because the *** ```GROUP_ID``` *** in the config.ini has already queried all the latest alerts from the stream.  In this case try changing*** ```GROUP_ID``` *** to something else and try running the script again *** OR execute the code with the ```--test``` option, which will add a random UUID to the end of the *** ```GROUP_ID``` ***.
 
 The plots and PS1 image are required to produce *subjects* for upload to a specific Zooniverse workflow and project identified by ```WORKFLOW_ID``` and ```PROJECT_ID``` located at the Zooniverse endpoint (```ENDPOINT```).  ***Note: The example script will fail to upload to the Zooniverse project at this point unless you have the correct premissions for that project.***  To test the upload to Zooniverse [build a Zooniverse project of your own](https://help.zooniverse.org/getting-started/) and update the ```WORKFLOW_ID``` and ```PROJECT_ID``` in config.ini for your project.
 
