@@ -392,5 +392,5 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
 
         del draw
 
-        im.thumbnail((300, 300), Image.ANTIALIAS)
+        im.thumbnail((300, 300), Image.LANCZOS)
         im.save(colorPath[0], "JPEG")
