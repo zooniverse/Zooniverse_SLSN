@@ -7,8 +7,7 @@ RUN pip3 install -r requirements.txt
 
 ADD . /usr/src
 
-ARG PANOPTES_USERNAME
-ARG PANOPTES_PASSWORD
+ARG PANOPTES_CLIENT_SECRET
 ARG LASAIR_TOKEN
 
 # add BUILD_DATE arg to invalidate the cache
