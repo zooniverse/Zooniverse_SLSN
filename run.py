@@ -49,7 +49,8 @@ def main():
 
   # Instantiate lasair-Zooniverse interface class
   lasair_zoo = lasair_zooniverse_class(config.get('APP', 'KAFKA_SERVER'),
-                                       config.get('APP', 'ENDPOINT'))
+                                       config.get('APP', 'ENDPOINT'),
+                                       config.get('APP', 'PANOPTES_APP_ID'))
 
   # Query lasair kafka stream for objects according to group id and the
   # topic (aka. Stream name at https://lasair.roe.ac.uk/streams/)

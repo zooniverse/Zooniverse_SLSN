@@ -57,9 +57,10 @@ def handle_object(objectId, L):
 
 class lasair_zooniverse_class(lasair_zooniverse_base_class):
 
-    def __init__(self, kafka_server, ENDPOINT):
+    def __init__(self, kafka_server, ENDPOINT, PANOPTES_APP_ID):
         self.kafka_server = kafka_server
         self.ENDPOINT = ENDPOINT
+        self.PANOPTES_APP_ID = PANOPTES_APP_ID,
         self.log = logging.getLogger("lasair-zooniverse-logger")
 
 
@@ -160,37 +161,40 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         return None
 
     def create_subjects_and_link_to_project(self, proto_subjects, project_id, workflow_id, subject_set_id):
+        panoptes_client = Panoptes(
+          endpoint = self.ENDPOINT,
+          client_id = self.PANOPTES_APP_ID,
+          client_secret = os.getenv('PANOPTES_CLIENT_SECRET')
+        )
 
         
         try:
-            USERNAME = os.getenv('PANOPTES_USERNAME')
-            PASSWORD = os.getenv('PANOPTES_PASSWORD')
-            Panoptes.connect(username=USERNAME, password=PASSWORD, endpoint=self.ENDPOINT)
+            with panoptes_client:
             
-            project = Project.find(project_id)
-            workflow = Workflow().find(workflow_id)
+                project = Project.find(project_id)
+                workflow = Workflow().find(workflow_id)
 
-            if subject_set_id == None:
-                subject_set = SubjectSet()
-                ts = time.gmtime()
-                subject_set.display_name = time.strftime("%Y-%m-%d %H:%M:%S", ts) 
-                subject_set.links.project = project
+                if subject_set_id == None:
+                    subject_set = SubjectSet()
+                    ts = time.gmtime()
+                    subject_set.display_name = time.strftime("%Y-%m-%d %H:%M:%S", ts) 
+                    subject_set.links.project = project
                 
-                subject_set.save()
-            else:
-                subject_set = SubjectSet().find(subject_set_id)
-            subjects = []
-            for proto_subject in proto_subjects:
-                subject = Subject()
-                subject.links.project = project
-                subject.add_location(proto_subject['location_lc'])
-                subject.add_location(proto_subject['location_ps'])
-                subject.metadata.update(proto_subject['metadata'])
-                subject.save()
-                subjects.append(subject)
+                    subject_set.save()
+                else:
+                    subject_set = SubjectSet().find(subject_set_id)
+                subjects = []
+                for proto_subject in proto_subjects:
+                    subject = Subject()
+                    subject.links.project = project
+                    subject.add_location(proto_subject['location_lc'])
+                    subject.add_location(proto_subject['location_ps'])
+                    subject.metadata.update(proto_subject['metadata'])
+                    subject.save()
+                    subjects.append(subject)
 
-            subject_set.add(subjects)
-            workflow.add_subject_sets(subject_set)
+                subject_set.add(subjects)
+                workflow.add_subject_sets(subject_set)
         except Exception:
             self.log.exception("Error in create_subjects_and_link_to_project ")
         

@@ -40,8 +40,7 @@ jobs:
           ghcr.io/zooniverse/zooniverse-slsn:${{ github.sha }}
         build-args: |
           BUILD_DATE=${{ needs.build_date.outputs.BUILD_DATE }}
-          PANOPTES_USERNAME=${{ secrets.PANOPTES_USERNAME }}
-          PANOPTES_PASSWORD=${{ secrets.PANOPTES_PASSWORD }}
+          PANOPTES_CLIENT_SECRET=${{ secrets.PANOPTES_CLIENT_SECRET }}
           LASAIR_TOKEN=${{ secrets.LASAIR_TOKEN }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
