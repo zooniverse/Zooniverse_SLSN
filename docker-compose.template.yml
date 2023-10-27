@@ -9,6 +9,5 @@ services:
     entrypoint:
       - "/bin/sh"
     environment:
-      - PANOPTES_USERNAME=<PANOPTES_USERNAME>
-      - PANOPTES_PASSWORD=<PANOPTES_PASSWORD>
+      - PANOPTES_CLIENT_SECRET=<PANOPTES_CLIENT_SECRET>
       - LASAIR_TOKEN=<LASAIR_TOKEN>

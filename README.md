@@ -6,7 +6,7 @@ This repository demonstrates integration of [lasair](https://lasair.roe.ac.uk/),
 
 You'll need to have [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running.
 
-Copy `docker-compose.template.yml` to `docker-compose.yml` and add your Panoptes username, password and Lasair token.
+Copy `docker-compose.template.yml` to `docker-compose.yml` and add your [Panoptes secret](https://panoptes.zooniverse.org/oauth/applications/169) and Lasair token.
 
 Build the Docker image.
 
