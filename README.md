@@ -20,7 +20,7 @@ This will install all the Python dependencies, then run the `run.py` script to b
 
 The ['build subjects'](https://github.com/zooniverse/Zooniverse_SLSN/actions/workflows/build_subjects.yml) action will run a Docker build, installing the Python dependencies and running `run.py`.
 
-You can run it manually from the [Actions tab](https://github.com/zooniverse/Zooniverse_SLSN/actions). It is also scheduled to run weekly on Wednesday mornings.
+You can run it manually from the [Actions tab](https://github.com/zooniverse/Zooniverse_SLSN/actions). It is scheduled to run weekly on Wednesday mornings from the main branch, to add new subjects to the active workflow. Run it manually from the `json-subjects` branch to upload new JSON light curves.
 
 ## Installation
 
