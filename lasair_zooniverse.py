@@ -4,7 +4,6 @@ import json
 import wget
 import lasair_consumer
 import logging
-import matplotlib
 
 from pathlib import Path
 
@@ -13,7 +12,6 @@ from PIL import Image, ImageDraw
 from lasair_zooniverse_base import lasair_zooniverse_base_class
 
 # 3rd party imports
-import matplotlib.pyplot as plt
 import numpy as np
 from panoptes_client import Panoptes, Project, SubjectSet, Subject, Workflow
 from panstamps import __version__
@@ -21,6 +19,21 @@ from panstamps import cl_utils
 from panstamps import utKit
 from panstamps.downloader import downloader
 
+CHART_OPTIONS = {
+  'xAxisLabel': 'Days Since First Detection',
+  'yAxisLabel': 'Brightness',
+  'invertAxes': {
+    'x': False,
+    'y': True
+  },
+  'zoomConfiguration': {
+    'direction': 'x',
+    'minZoom': 1,
+    'maxZoom': 10,
+    'zoomInValue': 1.2,
+    'zoomOutValue': 0.8
+  }
+}
 class lasair_object:
 
     def __init__(self):
@@ -121,14 +134,14 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
                 return proto_subjects
             files = Path(dirpath).glob('*.json')
             for file in files:
-                print(file.name)
-                f=open(file, "r")
-                data = json.load(f)
-                f.close()
-                lasair_zobject = self.create_lasair_object(data)
-                proto_subject = self.build_proto_subject(lasair_zobject, data_dir)
-                if (proto_subject != None):
-                  proto_subjects.append(proto_subject)
+              print(file.name)
+              f=open(file, "r")
+              data = json.load(f)
+              f.close()
+              lasair_zobject = self.create_lasair_object(data)
+              proto_subject = self.build_proto_subject(lasair_zobject, data_dir)
+              if (proto_subject != None):
+                proto_subjects.append(proto_subject)
             return proto_subjects
         except Exception as e:
             self.log.exception("Error reading JSON object files from " + data_dir)
@@ -170,14 +183,13 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         
         try:
             with panoptes_client:
-            
                 project = Project.find(project_id)
                 workflow = Workflow().find(workflow_id)
 
                 if subject_set_id == None:
                     subject_set = SubjectSet()
                     ts = time.gmtime()
-                    subject_set.display_name = time.strftime("%Y-%m-%d %H:%M:%S", ts) 
+                    subject_set.display_name = 'JSON data ' + time.strftime("%Y-%m-%d %H:%M:%S", ts) 
                     subject_set.links.project = project
                 
                     subject_set.save()
@@ -263,6 +275,39 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
 
     def build_plots(self, lasair_object, data_dir):
 
+        red_detections = {
+          'seriesData': [],
+          'seriesOptions': {
+            'color': '#D1495B',
+            'glyph': 'circle',
+            'label': 'Red detection'
+          }
+        }
+        blue_detections = {
+          'seriesData': [],
+          'seriesOptions': {
+            'color': '#26547C',
+            'glyph': 'diamond',
+            'label': 'Blue detection'
+          }
+        }
+        red_limits = {
+          'seriesData': [],
+          'seriesOptions': {
+            'color': '#DE7C89',
+            'glyph': 'triangle',
+            'label': 'Red no detection'
+          }
+        }
+        blue_limits = {
+          'seriesData': [],
+          'seriesOptions': {
+            'color': '#4489C5',
+            'glyph': 'triangle',
+            'label': 'Blue no detection'
+          }
+        }
+
         mjd_red = []
         mag_red = []
         yerr_red = []
@@ -273,78 +318,59 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         yerr_blue = []
         mjd_blue_limit = []
         mag_blue_limit = []
-    
+
         mjd_first = np.inf
         print(len(lasair_object.Detections))
+
+        for detection in lasair_object.Detections:
+          if detection['mjd'] < mjd_first:
+            mjd_first = detection['mjd']
+
         for detection in lasair_object.Detections:
           print(detection)
       
           if detection['detect_flag']  == True:
-            if detection['mjd'] < mjd_first:
-              mjd_first = detection['mjd']
             if detection['fid'] == 2:
-              mjd_red.append(detection['mjd'])
-              mag_red.append(detection['mag'])
-              yerr_red.append(detection['error'])
+              red_detections['seriesData'].append({
+                'x': detection['mjd'] - mjd_first,
+                'y': detection['mag'],
+                'y_error': detection['error']
+              })
             elif detection['fid'] == 1:
-              mjd_blue.append(detection['mjd'])
-              mag_blue.append(detection['mag'])
-              yerr_blue.append(detection['error'])
+              blue_detections['seriesData'].append({
+                'x': detection['mjd'] - mjd_first,
+                'y': detection['mag'],
+                'y_error': detection['error']
+              })
           elif detection['detect_flag'] == False:
             if detection['fid'] == 2:
-              mjd_red_limit.append(detection['mjd'])
-              mag_red_limit.append(detection['mag'])
+              red_limits['seriesData'].append({
+                'x': detection['mjd'] - mjd_first,
+                'y': detection['mag']
+              })
             elif detection['fid'] == 1:
-              mjd_blue_limit.append(detection['mjd'])
-              mag_blue_limit.append(detection['mag'])
+              blue_limits['seriesData'].append({
+                'x': detection['mjd'] - mjd_first,
+                'y': detection['mag']
+              })
 
         dirpath = os.path.join(data_dir, time.strftime("%m-%d-%Y", time.gmtime()))
         if not os.path.exists(dirpath):
             os.makedirs(dirpath)
 
-        font = {'family' : 'sans-serif',
-                'size'   : 22}
+        light_curve = {
+          'data': [
+            red_detections,
+            blue_detections,
+            red_limits,
+            blue_limits
+          ],
+          'chartOptions': CHART_OPTIONS
+        }
 
-        matplotlib.rc('font', **font)
-
-        fig = plt.figure(figsize=(12,9))
-        ax = fig.add_subplot(111)
-
-        ax.errorbar(np.array(mjd_red) - mjd_first,
-                    mag_red,
-                    yerr=yerr_red,
-                    marker='o',
-                    markersize=10,
-                    color='#D1495B',
-                    ls='none')
-
-        ax.errorbar(np.array(mjd_blue) - mjd_first,
-                    mag_blue,
-                    yerr=yerr_blue,
-                    marker='D',
-                    markersize=10,
-                    color='#26547C',
-                    ls='none')
-
-        ax.scatter(np.array(mjd_red_limit) - mjd_first,
-                   mag_red_limit,
-                   marker='v',
-                   s=100,
-                   color='#DE7C89')
-
-        ax.scatter(np.array(mjd_blue_limit) - mjd_first,
-                   mag_blue_limit,
-                   marker='v',
-                   s=100,
-                   color='#4489C5')
-
-        ax.set_xlabel('Days since First Detection')
-        ax.set_ylabel('Brightness')
-
-        plt.grid()
-        plt.gca().invert_yaxis()
-        plt.savefig(os.path.join(dirpath, "%s_light_curve.jpeg"%(lasair_object.objectId)))
-
+        json_path = os.path.join(dirpath, "%s_light_curve.json"%(lasair_object.objectId))
+        with open(json_path, 'w') as fp:
+            json.dump(light_curve, fp)
 
         #now get the panstamps image
         colorPath = self.gather_metadata(lasair_object.ramean,lasair_object.decmean, dirpath)
@@ -352,9 +378,8 @@ class lasair_zooniverse_class(lasair_zooniverse_base_class):
         #put crosshairs on the panstamps image
         self.draw_crosshairs(lasair_object.ramean,lasair_object.decmean, colorPath)
 
-        light_curve = os.path.join(dirpath, "%s_light_curve.jpeg"%(lasair_object.objectId))
         plots = dict({ 'light_curve': light_curve, 'panstamps': colorPath })
-        return light_curve, colorPath[0]
+        return json_path, colorPath[0]
     
     def draw_crosshairs(self, ramean, decmean, colorPath):
         im = Image.open(colorPath[0], mode='r')
