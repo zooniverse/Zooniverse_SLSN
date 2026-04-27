@@ -1,5 +1,5 @@
 confluent-kafka>=1.9.2
-lasair>=0.0.5
+lasair>=0.1.4
 matplotlib>=3.6.2
 wget>=3.2
 panoptes-client>=1.5.0
